@@ -1,7 +1,8 @@
-import { DollarSign, ShoppingBag, TrendingUp, AlertTriangle, Sun, Moon, Sunset } from 'lucide-react';
+import { DollarSign, ShoppingBag, TrendingUp, AlertTriangle, Sun, Moon, Sunset, Loader2 } from 'lucide-react';
 import { StatCard } from './StatCard';
 import { RecentSales } from './RecentSales';
 import { SalesChart } from './SalesChart';
+import { useSales } from '@/hooks/useSales';
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -13,6 +14,15 @@ function getGreeting() {
 export function Dashboard() {
   const greeting = getGreeting();
   const GreetingIcon = greeting.icon;
+  const { stats, sales, loading } = useSales();
+
+  if (loading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -30,42 +40,42 @@ export function Dashboard() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Today's Sales"
-          value="$2,847"
-          change="+12.5% from yesterday"
+          value={`$${stats.todaySales.toFixed(2)}`}
+          change={`${stats.totalOrders} orders today`}
           changeType="positive"
           icon={DollarSign}
         />
         <StatCard
           title="Total Orders"
-          value="124"
-          change="+8 new orders"
+          value={stats.totalOrders.toString()}
+          change="Orders placed today"
           changeType="positive"
           icon={ShoppingBag}
         />
         <StatCard
           title="Avg Order Value"
-          value="$22.96"
-          change="+2.3% this week"
+          value={`$${stats.avgOrderValue.toFixed(2)}`}
+          change="Per transaction"
           changeType="positive"
           icon={TrendingUp}
         />
         <StatCard
           title="Low Stock Items"
-          value="7"
-          change="Needs attention"
-          changeType="negative"
+          value={stats.lowStockItems.toString()}
+          change={stats.lowStockItems > 0 ? "Needs attention" : "All stocked"}
+          changeType={stats.lowStockItems > 0 ? "negative" : "positive"}
           icon={AlertTriangle}
-          iconColor="text-warning"
+          iconColor={stats.lowStockItems > 0 ? "text-warning" : undefined}
         />
       </div>
 
       {/* Charts and Lists */}
       <div className="grid gap-6 lg:grid-cols-7">
         <div className="lg:col-span-4">
-          <SalesChart />
+          <SalesChart sales={sales} />
         </div>
         <div className="lg:col-span-3">
-          <RecentSales />
+          <RecentSales sales={sales} />
         </div>
       </div>
     </div>

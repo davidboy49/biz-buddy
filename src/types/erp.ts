@@ -2,10 +2,13 @@ export interface Product {
   id: string;
   name: string;
   price: number;
-  category: string;
+  category_id: string | null;
+  category_name?: string;
   stock: number;
-  sku: string;
-  image?: string;
+  sku: string | null;
+  barcode: string | null;
+  image_url: string | null;
+  is_active: boolean;
 }
 
 export interface CartItem {
@@ -15,10 +18,15 @@ export interface CartItem {
 
 export interface Sale {
   id: string;
-  items: CartItem[];
+  cashier_id: string;
+  customer_id: string | null;
+  subtotal: number;
+  discount: number;
+  tax: number;
   total: number;
-  paymentMethod: 'cash' | 'card';
-  timestamp: Date;
+  payment_method: 'cash' | 'card' | 'mobile' | 'other';
+  notes: string | null;
+  created_at: string;
 }
 
 export interface DashboardStats {
@@ -28,4 +36,7 @@ export interface DashboardStats {
   lowStockItems: number;
 }
 
-export type Category = 'all' | 'beverages' | 'food' | 'snacks' | 'desserts';
+export interface Category {
+  id: string;
+  name: string;
+}
