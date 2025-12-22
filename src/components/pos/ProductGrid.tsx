@@ -15,7 +15,7 @@ const categoryIcons: Record<string, React.ElementType> = {
 
 export function ProductGrid({ products, onAddToCart }: ProductGridProps) {
   return (
-    <div className="grid flex-1 auto-rows-min gap-3 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid flex-1 auto-rows-min gap-3 overflow-y-auto grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
       {products.map((product, index) => {
         const Icon = categoryIcons[product.category] || Coffee;
         

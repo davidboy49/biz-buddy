@@ -19,7 +19,7 @@ export function Cart({ items, onUpdateQuantity, onClear, onCheckout }: CartProps
   const total = subtotal + tax;
 
   return (
-    <div className="flex w-96 flex-col rounded-2xl bg-card shadow-lg">
+    <div className="flex w-full flex-col rounded-2xl bg-card shadow-lg lg:w-96">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border p-4">
         <div className="flex items-center gap-2">
