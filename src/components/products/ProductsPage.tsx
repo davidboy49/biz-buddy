@@ -51,10 +51,10 @@ export function ProductsPage() {
     const productData = {
       name: formData.name,
       price: parseFloat(formData.price),
-      category_id: formData.category_id || null,
+      category_id: formData.category_id && formData.category_id.trim() !== '' ? formData.category_id : null,
       stock: parseInt(formData.stock) || 0,
-      sku: formData.sku || null,
-      barcode: formData.barcode || null,
+      sku: formData.sku.trim() || null,
+      barcode: formData.barcode.trim() || null,
       image_url: null,
       is_active: true,
     };
