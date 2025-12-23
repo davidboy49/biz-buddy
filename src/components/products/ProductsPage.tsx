@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Search, Plus, Package, Edit2, Trash2, Loader2, X } from 'lucide-react';
-import { useProducts, Product, Category } from '@/hooks/useProducts';
+import { Search, Plus, Package, Edit2, Trash2, Loader2 } from 'lucide-react';
+import { useProducts, Product } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,7 +9,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -24,7 +23,8 @@ export function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const { products, categories, loading, addProduct, updateProduct, deleteProduct, addCategory } = useProducts();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { products, categories, loading, addProduct, updateProduct, deleteProduct } = useProducts();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -45,28 +45,42 @@ export function ProductsPage() {
     setEditingProduct(null);
   };
 
+  const handleDialogChange = (open: boolean) => {
+    if (isSubmitting) return; // Prevent closing during submission
+    setIsAddDialogOpen(open);
+    if (!open) resetForm();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    if (isSubmitting) return;
+    setIsSubmitting(true);
 
-    const productData = {
-      name: formData.name,
-      price: parseFloat(formData.price),
-      category_id: formData.category_id && formData.category_id.trim() !== '' ? formData.category_id : null,
-      stock: parseInt(formData.stock) || 0,
-      sku: formData.sku.trim() || null,
-      barcode: formData.barcode.trim() || null,
-      image_url: null,
-      is_active: true,
-    };
+    try {
+      const productData = {
+        name: formData.name.trim(),
+        price: parseFloat(formData.price),
+        category_id: formData.category_id && formData.category_id.trim() !== '' ? formData.category_id : null,
+        stock: parseInt(formData.stock) || 0,
+        sku: formData.sku.trim() || null,
+        barcode: formData.barcode.trim() || null,
+        image_url: null,
+        is_active: true,
+      };
 
-    if (editingProduct) {
-      await updateProduct(editingProduct.id, productData);
-    } else {
-      await addProduct(productData);
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, productData);
+      } else {
+        await addProduct(productData);
+      }
+
+      setIsAddDialogOpen(false);
+      resetForm();
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsAddDialogOpen(false);
-    resetForm();
   };
 
   const handleEdit = (product: Product) => {
@@ -104,13 +118,11 @@ export function ProductsPage() {
           <h1 className="text-3xl font-bold text-foreground">Products</h1>
           <p className="text-muted-foreground">Manage your inventory and products</p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={(open) => { setIsAddDialogOpen(open); if (!open) resetForm(); }}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add Product
-            </Button>
-          </DialogTrigger>
+        <Button className="gap-2" onClick={() => setIsAddDialogOpen(true)}>
+          <Plus className="h-4 w-4" />
+          Add Product
+        </Button>
+        <Dialog open={isAddDialogOpen} onOpenChange={handleDialogChange}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
@@ -187,11 +199,18 @@ export function ProductsPage() {
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => { setIsAddDialogOpen(false); resetForm(); }}>
+                <Button type="button" variant="outline" onClick={() => handleDialogChange(false)} disabled={isSubmitting}>
                   Cancel
                 </Button>
-                <Button type="submit">
-                  {editingProduct ? 'Update' : 'Add'} Product
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {editingProduct ? 'Updating...' : 'Adding...'}
+                    </>
+                  ) : (
+                    <>{editingProduct ? 'Update' : 'Add'} Product</>
+                  )}
                 </Button>
               </div>
             </form>
