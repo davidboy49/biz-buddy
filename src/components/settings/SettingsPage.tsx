@@ -1,23 +1,35 @@
-import { Store, Bell, Shield, Palette } from 'lucide-react';
+import { useState } from 'react';
+import { Store, Bell, Shield, Palette, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { StoreSettings } from './StoreSettings';
+import { NotificationSettings } from './NotificationSettings';
+import { SecuritySettings } from './SecuritySettings';
+import { AppearanceSettings } from './AppearanceSettings';
+import { DangerZone } from './DangerZone';
+
+type SettingsSection = 'main' | 'store' | 'notifications' | 'security' | 'appearance';
 
 const settingsSections = [
   {
+    id: 'store' as const,
     title: 'Store Settings',
     description: 'Configure your store name, address, and contact information',
     icon: Store,
   },
   {
+    id: 'notifications' as const,
     title: 'Notifications',
     description: 'Manage email and push notification preferences',
     icon: Bell,
   },
   {
+    id: 'security' as const,
     title: 'Security',
     description: 'Update password and manage access permissions',
     icon: Shield,
   },
   {
+    id: 'appearance' as const,
     title: 'Appearance',
     description: 'Customize theme colors and display options',
     icon: Palette,
@@ -25,6 +37,42 @@ const settingsSections = [
 ];
 
 export function SettingsPage() {
+  const [activeSection, setActiveSection] = useState<SettingsSection>('main');
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'store':
+        return <StoreSettings />;
+      case 'notifications':
+        return <NotificationSettings />;
+      case 'security':
+        return <SecuritySettings />;
+      case 'appearance':
+        return <AppearanceSettings />;
+      default:
+        return null;
+    }
+  };
+
+  if (activeSection !== 'main') {
+    return (
+      <div className="space-y-6">
+        <Button
+          variant="ghost"
+          className="gap-2 mb-2"
+          onClick={() => setActiveSection('main')}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Back to Settings
+        </Button>
+        
+        <div className="stat-card animate-fade-in">
+          {renderSection()}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -39,9 +87,10 @@ export function SettingsPage() {
           const Icon = section.icon;
           
           return (
-            <div 
-              key={section.title}
-              className="stat-card cursor-pointer animate-fade-in"
+            <button 
+              key={section.id}
+              onClick={() => setActiveSection(section.id)}
+              className="stat-card cursor-pointer animate-fade-in text-left hover:border-primary/50 transition-colors"
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className="flex items-start gap-4">
@@ -53,22 +102,14 @@ export function SettingsPage() {
                   <p className="mt-1 text-sm text-muted-foreground">{section.description}</p>
                 </div>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
 
       {/* Danger Zone */}
-      <div className="stat-card border-destructive/20 animate-fade-in" style={{ animationDelay: '200ms' }}>
-        <h3 className="font-semibold text-destructive">Danger Zone</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Irreversible actions that affect your store data
-        </p>
-        <div className="mt-4 flex gap-3">
-          <Button variant="outline" className="border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground">
-            Clear All Data
-          </Button>
-        </div>
+      <div className="stat-card animate-fade-in" style={{ animationDelay: '200ms' }}>
+        <DangerZone />
       </div>
     </div>
   );
