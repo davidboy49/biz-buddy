@@ -1,8 +1,10 @@
 import { TrendingUp, Calendar, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SalesChart } from '@/components/dashboard/SalesChart';
+import { useSales } from '@/hooks/useSales';
 
 export function ReportsPage() {
+  const { sales } = useSales();
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -56,7 +58,7 @@ export function ReportsPage() {
 
       {/* Chart */}
       <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
-        <SalesChart />
+        <SalesChart sales={sales} />
       </div>
     </div>
   );

@@ -3,23 +3,35 @@ import { Category } from '@/types/erp';
 import { cn } from '@/lib/utils';
 
 interface CategoryFilterProps {
-  selected: Category;
-  onSelect: (category: Category) => void;
+  categories: Category[];
+  selected: string;
+  onSelect: (categoryId: string) => void;
 }
 
-const categories: { id: Category; label: string; icon: React.ElementType }[] = [
-  { id: 'all', label: 'All Items', icon: LayoutGrid },
-  { id: 'beverages', label: 'Beverages', icon: Coffee },
-  { id: 'food', label: 'Food', icon: UtensilsCrossed },
-  { id: 'snacks', label: 'Snacks', icon: Cookie },
-  { id: 'desserts', label: 'Desserts', icon: Cake },
-];
+const categoryIcons: Record<string, React.ElementType> = {
+  beverages: Coffee,
+  food: UtensilsCrossed,
+  snacks: Cookie,
+  desserts: Cake,
+};
 
-export function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
+export function CategoryFilter({ categories, selected, onSelect }: CategoryFilterProps) {
   return (
     <div className="flex gap-2 overflow-x-auto pb-2">
+      <button
+        onClick={() => onSelect('all')}
+        className={cn(
+          "flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200",
+          selected === 'all'
+            ? "bg-primary text-primary-foreground shadow-md glow-effect"
+            : "bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
+        )}
+      >
+        <LayoutGrid className="h-4 w-4" />
+        All Items
+      </button>
       {categories.map((category) => {
-        const Icon = category.icon;
+        const Icon = categoryIcons[category.name.toLowerCase()] || Coffee;
         const isActive = selected === category.id;
         
         return (
@@ -34,7 +46,7 @@ export function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
             )}
           >
             <Icon className="h-4 w-4" />
-            {category.label}
+            {category.name}
           </button>
         );
       })}

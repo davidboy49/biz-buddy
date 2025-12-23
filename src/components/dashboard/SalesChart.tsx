@@ -1,18 +1,44 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Sale } from '@/types/erp';
+import { format, startOfHour, subHours, isWithinInterval } from 'date-fns';
+import { useMemo } from 'react';
 
-const data = [
-  { name: '9AM', sales: 120 },
-  { name: '10AM', sales: 280 },
-  { name: '11AM', sales: 350 },
-  { name: '12PM', sales: 520 },
-  { name: '1PM', sales: 480 },
-  { name: '2PM', sales: 320 },
-  { name: '3PM', sales: 290 },
-  { name: '4PM', sales: 410 },
-  { name: '5PM', sales: 380 },
-];
+interface SalesChartProps {
+  sales: Sale[];
+}
 
-export function SalesChart() {
+export function SalesChart({ sales }: SalesChartProps) {
+  const chartData = useMemo(() => {
+    const now = new Date();
+    const hours = Array.from({ length: 12 }, (_, i) => {
+      const hour = subHours(startOfHour(now), 11 - i);
+      return {
+        hour,
+        label: format(hour, 'ha'),
+        sales: 0,
+      };
+    });
+
+    sales.forEach((sale) => {
+      const saleDate = new Date(sale.created_at);
+      const hourIndex = hours.findIndex((h, i) => {
+        const nextHour = hours[i + 1];
+        if (!nextHour) {
+          return isWithinInterval(saleDate, { start: h.hour, end: now });
+        }
+        return isWithinInterval(saleDate, { start: h.hour, end: nextHour.hour });
+      });
+      if (hourIndex !== -1) {
+        hours[hourIndex].sales += sale.total;
+      }
+    });
+
+    return hours.map((h) => ({
+      time: h.label,
+      sales: Math.round(h.sales * 100) / 100,
+    }));
+  }, [sales]);
+
   return (
     <div className="stat-card h-full">
       <div className="mb-6">
@@ -21,11 +47,11 @@ export function SalesChart() {
       </div>
       <div className="h-[280px]">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
+          <AreaChart data={chartData}>
             <defs>
               <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(173, 80%, 45%)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="hsl(173, 80%, 45%)" stopOpacity={0} />
+                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid 
@@ -34,7 +60,7 @@ export function SalesChart() {
               vertical={false}
             />
             <XAxis 
-              dataKey="name" 
+              dataKey="time" 
               axisLine={false}
               tickLine={false}
               tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
@@ -50,17 +76,17 @@ export function SalesChart() {
                 backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
-                boxShadow: 'var(--shadow-lg)',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               }}
               labelStyle={{ color: 'hsl(var(--foreground))' }}
-              formatter={(value: number) => [`$${value}`, 'Sales']}
+              formatter={(value: number) => [`$${value.toFixed(2)}`, 'Sales']}
             />
-            <Area
-              type="monotone"
-              dataKey="sales"
-              stroke="hsl(173, 80%, 45%)"
+            <Area 
+              type="monotone" 
+              dataKey="sales" 
+              stroke="hsl(var(--primary))" 
               strokeWidth={2}
-              fill="url(#salesGradient)"
+              fill="url(#salesGradient)" 
             />
           </AreaChart>
         </ResponsiveContainer>
