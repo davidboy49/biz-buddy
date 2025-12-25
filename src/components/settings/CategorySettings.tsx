@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export function CategorySettings() {
   const { categories, addCategory } = useProducts();
+  const { user, loading } = useAuth();
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isAdding, setIsAdding] = useState(false);
 
@@ -15,6 +17,7 @@ export function CategorySettings() {
   );
 
   const handleAddCategory = async () => {
+    if (!user || loading) return;
     if (isAdding) return;
     const trimmedName = newCategoryName.trim();
     if (!trimmedName) return;
@@ -37,6 +40,8 @@ export function CategorySettings() {
     }
   };
 
+  const canAddCategory = !!user && !loading;
+
   return (
     <div className="space-y-6">
       <div>
@@ -54,11 +59,17 @@ export function CategorySettings() {
             placeholder="e.g. Snacks"
             value={newCategoryName}
             onChange={(e) => setNewCategoryName(e.target.value)}
+            disabled={!canAddCategory}
           />
-          <Button type="button" onClick={handleAddCategory} disabled={isAdding}>
+          <Button type="button" onClick={handleAddCategory} disabled={!canAddCategory || isAdding}>
             {isAdding ? 'Adding...' : 'Add Category'}
           </Button>
         </div>
+        {!canAddCategory && (
+          <p className="text-xs text-muted-foreground">
+            Sign in to add new categories.
+          </p>
+        )}
       </div>
 
       <div className="space-y-3">
