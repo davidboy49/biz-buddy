@@ -25,10 +25,8 @@ export function ProductsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { products, categories, loading, addProduct, updateProduct, deleteProduct, addCategory } = useProducts();
+  const { products, categories, loading, addProduct, updateProduct, deleteProduct } = useProducts();
   const { toast } = useToast();
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [isAddingCategory, setIsAddingCategory] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -98,33 +96,6 @@ export function ProductsPage() {
       resetForm();
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleAddCategory = async () => {
-    if (isAddingCategory) return;
-    const trimmedName = newCategoryName.trim();
-    if (!trimmedName) return;
-
-    const existingCategory = categories.find(
-      (category) => category.name.toLowerCase() === trimmedName.toLowerCase()
-    );
-
-    if (existingCategory) {
-      setFormData((prev) => ({ ...prev, category_id: existingCategory.id }));
-      setNewCategoryName('');
-      return;
-    }
-
-    setIsAddingCategory(true);
-    try {
-      const createdCategory = await addCategory(trimmedName);
-      if (createdCategory?.id) {
-        setFormData((prev) => ({ ...prev, category_id: createdCategory.id }));
-        setNewCategoryName('');
-      }
-    } finally {
-      setIsAddingCategory(false);
     }
   };
 
