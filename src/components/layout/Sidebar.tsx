@@ -19,11 +19,11 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, shortcut: '1' },
-  { id: 'pos', label: 'Point of Sale', icon: ShoppingCart, shortcut: '2' },
-  { id: 'products', label: 'Products', icon: Package, shortcut: '3' },
-  { id: 'reports', label: 'Reports', icon: BarChart3, shortcut: '4' },
-  { id: 'settings', label: 'Settings', icon: Settings, shortcut: '5' },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'pos', label: 'Point of Sale', icon: ShoppingCart },
+  { id: 'products', label: 'Products', icon: Package },
+  { id: 'reports', label: 'Reports', icon: BarChart3 },
+  { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 export function Sidebar({ currentPage, onNavigate, isMobileOpen, onMobileClose }: SidebarProps) {
@@ -90,12 +90,6 @@ export function Sidebar({ currentPage, onNavigate, isMobileOpen, onMobileClose }
                     <Icon className="h-5 w-5" />
                     {item.label}
                   </div>
-                  <kbd className={cn(
-                    "hidden rounded bg-sidebar-accent px-1.5 py-0.5 text-[10px] font-mono lg:inline-block",
-                    isActive ? "bg-sidebar-primary-foreground/20" : "opacity-50 group-hover:opacity-100"
-                  )}>
-                    {item.shortcut}
-                  </kbd>
                 </button>
               );
             })}

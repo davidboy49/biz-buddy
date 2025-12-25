@@ -25,6 +25,7 @@ export function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { products, categories, loading, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -59,11 +60,24 @@ export function ProductsPage() {
     setIsSubmitting(true);
 
     try {
+      const priceValue = Number.parseFloat(formData.price);
+      const stockValue = Number.parseInt(formData.stock, 10);
+
+      if (!Number.isFinite(priceValue) || priceValue < 0) {
+        toast({ variant: 'destructive', title: 'Invalid price', description: 'Enter a valid price amount.' });
+        return;
+      }
+
+      if (!Number.isFinite(stockValue) || stockValue < 0) {
+        toast({ variant: 'destructive', title: 'Invalid stock', description: 'Enter a valid stock quantity.' });
+        return;
+      }
+
       const productData = {
         name: formData.name.trim(),
-        price: parseFloat(formData.price),
+        price: priceValue,
         category_id: formData.category_id && formData.category_id.trim() !== '' ? formData.category_id : null,
-        stock: parseInt(formData.stock) || 0,
+        stock: stockValue,
         sku: formData.sku.trim() || null,
         barcode: formData.barcode.trim() || null,
         image_url: null,
@@ -81,6 +95,20 @@ export function ProductsPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handlePriceChange = (value: string) => {
+    const sanitized = value.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+    const [integerPart, ...decimalParts] = sanitized.split('.');
+    const normalized = decimalParts.length
+      ? `${integerPart}.${decimalParts.join('')}`
+      : integerPart;
+    setFormData((prev) => ({ ...prev, price: normalized }));
+  };
+
+  const handleDigitsChange = (field: 'stock' | 'sku' | 'barcode', value: string) => {
+    const sanitized = value.replace(/\D/g, '');
+    setFormData((prev) => ({ ...prev, [field]: sanitized }));
   };
 
   const handleEdit = (product: Product) => {
@@ -142,11 +170,11 @@ export function ProductsPage() {
                   <Label htmlFor="price">Price</Label>
                   <Input
                     id="price"
-                    type="number"
-                    step="0.01"
-                    min="0"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0.00"
                     value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    onChange={(e) => handlePriceChange(e.target.value)}
                     required
                   />
                 </div>
@@ -154,10 +182,11 @@ export function ProductsPage() {
                   <Label htmlFor="stock">Stock</Label>
                   <Input
                     id="stock"
-                    type="number"
-                    min="0"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
                     value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                    onChange={(e) => handleDigitsChange('stock', e.target.value)}
                     required
                   />
                 </div>
@@ -185,16 +214,22 @@ export function ProductsPage() {
                   <Label htmlFor="sku">SKU</Label>
                   <Input
                     id="sku"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Digits only"
                     value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                    onChange={(e) => handleDigitsChange('sku', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="barcode">Barcode</Label>
                   <Input
                     id="barcode"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Digits only"
                     value={formData.barcode}
-                    onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                    onChange={(e) => handleDigitsChange('barcode', e.target.value)}
                   />
                 </div>
               </div>

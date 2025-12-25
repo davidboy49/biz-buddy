@@ -118,6 +118,17 @@ export function useProducts() {
   };
 
   const addCategory = async (name: string) => {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      toast({
+        variant: 'destructive',
+        title: 'Sign in required',
+        description: 'Please sign in before adding categories.',
+      });
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('categories')
       .insert({ name })
@@ -125,7 +136,10 @@ export function useProducts() {
       .single();
 
     if (error) {
-      toast({ variant: 'destructive', title: 'Error adding category', description: error.message });
+      const description = error.message.includes('row-level security')
+        ? 'Your account does not have permission to add categories.'
+        : error.message;
+      toast({ variant: 'destructive', title: 'Error adding category', description });
       return null;
     }
 
