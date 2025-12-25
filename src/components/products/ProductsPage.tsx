@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 export function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,6 +45,7 @@ export function ProductsPage() {
   const resetForm = () => {
     setFormData({ name: '', price: '', category_id: '', stock: '', sku: '', barcode: '' });
     setEditingProduct(null);
+    setNewCategoryName('');
   };
 
   const handleDialogChange = (open: boolean) => {
@@ -208,6 +210,16 @@ export function ProductsPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add new category"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                  />
+                  <Button type="button" variant="secondary" onClick={handleAddCategory} disabled={isAddingCategory}>
+                    {isAddingCategory ? 'Adding...' : 'Add'}
+                  </Button>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
