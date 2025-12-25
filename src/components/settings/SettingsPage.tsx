@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Store, Bell, Shield, Palette, ChevronLeft } from 'lucide-react';
+import { Store, Bell, Shield, Palette, ChevronLeft, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StoreSettings } from './StoreSettings';
 import { NotificationSettings } from './NotificationSettings';
 import { SecuritySettings } from './SecuritySettings';
 import { AppearanceSettings } from './AppearanceSettings';
 import { DangerZone } from './DangerZone';
+import { CategorySettings } from './CategorySettings';
 
-type SettingsSection = 'main' | 'store' | 'notifications' | 'security' | 'appearance';
+type SettingsSection = 'main' | 'store' | 'notifications' | 'security' | 'appearance' | 'categories';
 
 const settingsSections = [
   {
@@ -34,6 +35,12 @@ const settingsSections = [
     description: 'Customize theme colors and display options',
     icon: Palette,
   },
+  {
+    id: 'categories' as const,
+    title: 'Categories',
+    description: 'Manage product categories for inventory and POS filters',
+    icon: Package,
+  },
 ];
 
 export function SettingsPage() {
@@ -49,6 +56,8 @@ export function SettingsPage() {
         return <SecuritySettings />;
       case 'appearance':
         return <AppearanceSettings />;
+      case 'categories':
+        return <CategorySettings />;
       default:
         return null;
     }
