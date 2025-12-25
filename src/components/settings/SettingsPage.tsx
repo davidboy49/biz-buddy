@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Store, Bell, Shield, Palette, ChevronLeft, Package } from 'lucide-react';
+import { Store, Bell, Shield, Palette, ChevronLeft, Package, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StoreSettings } from './StoreSettings';
 import { NotificationSettings } from './NotificationSettings';
@@ -7,8 +7,9 @@ import { SecuritySettings } from './SecuritySettings';
 import { AppearanceSettings } from './AppearanceSettings';
 import { DangerZone } from './DangerZone';
 import { CategorySettings } from './CategorySettings';
+import { UserManagementSettings } from './UserManagementSettings';
 
-type SettingsSection = 'main' | 'store' | 'notifications' | 'security' | 'appearance' | 'categories';
+type SettingsSection = 'main' | 'store' | 'notifications' | 'security' | 'appearance' | 'categories' | 'users';
 
 const settingsSections = [
   {
@@ -41,6 +42,12 @@ const settingsSections = [
     description: 'Manage product categories for inventory and POS filters',
     icon: Package,
   },
+  {
+    id: 'users' as const,
+    title: 'User Management',
+    description: 'Update profile details and account information',
+    icon: Users,
+  },
 ];
 
 export function SettingsPage() {
@@ -58,6 +65,8 @@ export function SettingsPage() {
         return <AppearanceSettings />;
       case 'categories':
         return <CategorySettings />;
+      case 'users':
+        return <UserManagementSettings />;
       default:
         return null;
     }
