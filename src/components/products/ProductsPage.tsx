@@ -129,7 +129,7 @@ export function ProductsPage() {
   };
 
   const handlePriceChange = (value: string) => {
-    const sanitized = value.replace(/[^0-9.]/g, '');
+    const sanitized = value.replace(/,/g, '.').replace(/[^0-9.]/g, '');
     const [integerPart, ...decimalParts] = sanitized.split('.');
     const normalized = decimalParts.length
       ? `${integerPart}.${decimalParts.join('')}`
