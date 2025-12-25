@@ -18,13 +18,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 export function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { products, categories, loading, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { products, categories, loading, addProduct, updateProduct, deleteProduct, addCategory } = useProducts();
+  const { toast } = useToast();
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -43,6 +47,7 @@ export function ProductsPage() {
   const resetForm = () => {
     setFormData({ name: '', price: '', category_id: '', stock: '', sku: '', barcode: '' });
     setEditingProduct(null);
+    setNewCategoryName('');
   };
 
   const handleDialogChange = (open: boolean) => {
@@ -59,11 +64,24 @@ export function ProductsPage() {
     setIsSubmitting(true);
 
     try {
+      const priceValue = Number.parseFloat(formData.price);
+      const stockValue = Number.parseInt(formData.stock, 10);
+
+      if (!Number.isFinite(priceValue) || priceValue < 0) {
+        toast({ variant: 'destructive', title: 'Invalid price', description: 'Enter a valid price amount.' });
+        return;
+      }
+
+      if (!Number.isFinite(stockValue) || stockValue < 0) {
+        toast({ variant: 'destructive', title: 'Invalid stock', description: 'Enter a valid stock quantity.' });
+        return;
+      }
+
       const productData = {
         name: formData.name.trim(),
-        price: parseFloat(formData.price),
+        price: priceValue,
         category_id: formData.category_id && formData.category_id.trim() !== '' ? formData.category_id : null,
-        stock: parseInt(formData.stock) || 0,
+        stock: stockValue,
         sku: formData.sku.trim() || null,
         barcode: formData.barcode.trim() || null,
         image_url: null,
@@ -81,6 +99,47 @@ export function ProductsPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAddCategory = async () => {
+    if (isAddingCategory) return;
+    const trimmedName = newCategoryName.trim();
+    if (!trimmedName) return;
+
+    const existingCategory = categories.find(
+      (category) => category.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (existingCategory) {
+      setFormData((prev) => ({ ...prev, category_id: existingCategory.id }));
+      setNewCategoryName('');
+      return;
+    }
+
+    setIsAddingCategory(true);
+    try {
+      const createdCategory = await addCategory(trimmedName);
+      if (createdCategory?.id) {
+        setFormData((prev) => ({ ...prev, category_id: createdCategory.id }));
+        setNewCategoryName('');
+      }
+    } finally {
+      setIsAddingCategory(false);
+    }
+  };
+
+  const handlePriceChange = (value: string) => {
+    const sanitized = value.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+    const [integerPart, ...decimalParts] = sanitized.split('.');
+    const normalized = decimalParts.length
+      ? `${integerPart}.${decimalParts.join('')}`
+      : integerPart;
+    setFormData((prev) => ({ ...prev, price: normalized }));
+  };
+
+  const handleDigitsChange = (field: 'stock' | 'sku' | 'barcode', value: string) => {
+    const sanitized = value.replace(/\D/g, '');
+    setFormData((prev) => ({ ...prev, [field]: sanitized }));
   };
 
   const handleEdit = (product: Product) => {
@@ -142,11 +201,11 @@ export function ProductsPage() {
                   <Label htmlFor="price">Price</Label>
                   <Input
                     id="price"
-                    type="number"
-                    step="0.01"
-                    min="0"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0.00"
                     value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    onChange={(e) => handlePriceChange(e.target.value)}
                     required
                   />
                 </div>
@@ -154,10 +213,11 @@ export function ProductsPage() {
                   <Label htmlFor="stock">Stock</Label>
                   <Input
                     id="stock"
-                    type="number"
-                    min="0"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
                     value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                    onChange={(e) => handleDigitsChange('stock', e.target.value)}
                     required
                   />
                 </div>
@@ -179,22 +239,38 @@ export function ProductsPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add new category"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                  />
+                  <Button type="button" variant="secondary" onClick={handleAddCategory} disabled={isAddingCategory}>
+                    {isAddingCategory ? 'Adding...' : 'Add'}
+                  </Button>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="sku">SKU</Label>
                   <Input
                     id="sku"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Digits only"
                     value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                    onChange={(e) => handleDigitsChange('sku', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="barcode">Barcode</Label>
                   <Input
                     id="barcode"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Digits only"
                     value={formData.barcode}
-                    onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                    onChange={(e) => handleDigitsChange('barcode', e.target.value)}
                   />
                 </div>
               </div>

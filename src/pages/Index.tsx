@@ -6,7 +6,6 @@ import { POSTerminal } from '@/components/pos/POSTerminal';
 import { ProductsPage } from '@/components/products/ProductsPage';
 import { ReportsPage } from '@/components/reports/ReportsPage';
 import { SettingsPage } from '@/components/settings/SettingsPage';
-import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -16,15 +15,6 @@ const Index = () => {
     setCurrentPage(page);
     setIsMobileMenuOpen(false);
   }, []);
-
-  // Keyboard shortcuts for navigation
-  useKeyboardShortcuts([
-    { key: '1', callback: () => navigateTo('dashboard') },
-    { key: '2', callback: () => navigateTo('pos') },
-    { key: '3', callback: () => navigateTo('products') },
-    { key: '4', callback: () => navigateTo('reports') },
-    { key: '5', callback: () => navigateTo('settings') },
-  ]);
 
   const renderPage = () => {
     switch (currentPage) {
