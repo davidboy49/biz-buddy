@@ -1,4 +1,6 @@
 import { useState, useCallback } from 'react';
+import { Navigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileHeader } from '@/components/layout/MobileHeader';
 import { Dashboard } from '@/components/dashboard/Dashboard';
@@ -6,25 +8,17 @@ import { POSTerminal } from '@/components/pos/POSTerminal';
 import { ProductsPage } from '@/components/products/ProductsPage';
 import { ReportsPage } from '@/components/reports/ReportsPage';
 import { SettingsPage } from '@/components/settings/SettingsPage';
-import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, loading } = useAuth();
 
   const navigateTo = useCallback((page: string) => {
     setCurrentPage(page);
     setIsMobileMenuOpen(false);
   }, []);
-
-  // Keyboard shortcuts for navigation
-  useKeyboardShortcuts([
-    { key: '1', callback: () => navigateTo('dashboard') },
-    { key: '2', callback: () => navigateTo('pos') },
-    { key: '3', callback: () => navigateTo('products') },
-    { key: '4', callback: () => navigateTo('reports') },
-    { key: '5', callback: () => navigateTo('settings') },
-  ]);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -42,6 +36,18 @@ const Index = () => {
         return <Dashboard />;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
